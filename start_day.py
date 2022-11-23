@@ -2,12 +2,15 @@
 as well as an empty .py file for the code
 """
 
-
+import sys
 import os
 
 
 def start_day():
-    day_number = int(input("Which day is it ?\nDay : "))
+    if len(sys.argv) > 1:
+        day_number = int(sys.argv[1])
+    else:
+        day_number = int(input("Which day is it ?\nDay : "))
 
     input_filename = f"inputs/day{day_number}.txt"
     code_filename = f"advent-of-code-2022/day{day_number}.py"
