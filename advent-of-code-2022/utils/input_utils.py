@@ -2,7 +2,7 @@
 """
 
 
-def get_input(day: int) -> list[list[str]]:
+def get_input(day: int) -> list[str]:
     """File reading function for a given day
 
     Args:
