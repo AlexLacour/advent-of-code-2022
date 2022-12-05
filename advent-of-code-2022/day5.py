@@ -7,6 +7,11 @@ from collections import defaultdict
 raw_input = get_input(day=5)
 
 
+def parse_instruction(instruction_line_str: str):
+    split_instruction = instruction_line_str.split()
+    return list(map(int, [split_instruction[1], split_instruction[3], split_instruction[5]]))
+
+
 def separate_stacks_and_instructions():
     for line_index, line in enumerate(raw_input):
         if line == "":
@@ -24,19 +29,29 @@ def separate_stacks_and_instructions():
             stacks[column_id + 1].append(crate_char)
     
     instructions = [
-        instruction_line.split()
+        parse_instruction(instruction_line)
         for instruction_line in raw_instructions
     ]
     return stacks, instructions
-    
 
 
 def part1():
-    separate_stacks_and_instructions()
+    stacks, instructions = separate_stacks_and_instructions()
+
+    for instruction in instructions:
+        for _ in range(instruction[0]):
+            stacks[instruction[2]].append(stacks[instruction[1]].pop())
+    return "".join([stack[-1] for stack in stacks.values()])
 
 
 def part2():
-    pass
+    stacks, instructions = separate_stacks_and_instructions()
+
+    for instruction in instructions:
+        crates = [stacks[instruction[1]].pop() for _ in range(instruction[0])][::-1]
+        stacks[instruction[2]].extend(crates)
+
+    return "".join([stack[-1] for stack in stacks.values()])
 
 
 if __name__ == "__main__":
