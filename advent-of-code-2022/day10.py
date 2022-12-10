@@ -1,7 +1,5 @@
 """Advent Of Code 2022 : Day 10
 """
-from collections import defaultdict
-import queue
 from utils import get_input
 import numpy as np
 
@@ -31,10 +29,10 @@ def part1():
     return sum([idx * signal[idx - 1] for idx in signal_idxs])
 
 
-def render_screen(raw_screen):
+def render_screen(raw_screen, thickness = 2):
     screen = np.reshape(raw_screen, (6, 40))
     rendered_screen = "\n".join([
-        "".join([u"\u2588" if value else " " for value in row])
+        "".join([u"\u2588" * thickness if value else " " * thickness for value in row])
         for row in screen
     ])
     return "\n" + rendered_screen
