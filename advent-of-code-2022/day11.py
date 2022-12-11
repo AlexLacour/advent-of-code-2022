@@ -10,6 +10,9 @@ import math
 raw_input = get_input(day=11)
 
 
+operations_memory = {}
+
+
 class StupidMonkey:
     def __init__(self, monkey_id: int, items: list, operation_str: str, test_str: str, next_throw: tuple,
                  boredom: int):
@@ -30,7 +33,9 @@ class StupidMonkey:
 
     def execute_operation(self, item_level: int) -> int:
         operation_lambda_str = f"lambda old: {self.operation}"
-        new_item_level = eval(operation_lambda_str)(item_level)
+        if (operation_lambda_str, item_level) not in operations_memory:
+            operations_memory[(operation_lambda_str, item_level)] = eval(operation_lambda_str)(item_level)
+        new_item_level = operations_memory[(operation_lambda_str, item_level)]
         return new_item_level
 
     def get_divisible_by(self):
