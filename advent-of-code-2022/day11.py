@@ -28,9 +28,8 @@ class StupidMonkey:
     def receive_items(self, item_levels: list[int]):
         self.items.extend(item_levels)
 
-    @staticmethod
-    def execute_operation(operation, item_level: int) -> int:
-        operation_lambda_str = f"lambda old: {operation}"
+    def execute_operation(self, item_level: int) -> int:
+        operation_lambda_str = f"lambda old: {self.operation}"
         new_item_level = eval(operation_lambda_str)(item_level)
         return new_item_level
 
@@ -47,15 +46,14 @@ class StupidMonkey:
         else:
             raise Exception(f"new test found {self.test_str}")
 
-    def get_next_throws(self):
+    def get_next_throws(self, other_monkeys_div: list):
         next_items_thrown = defaultdict(list)
         for item_level in copy.deepcopy(self.items):
 
-            # V1 (the long way round)
-            new_item_level = self.execute_operation(self.operation, item_level)
+            new_item_level = self.execute_operation(item_level)
             if self.boredom > 1:
-                new_item_level //= self.boredom
-            new_item_level = new_item_level % math.prod([monkey.get_divisible_by() for monkey in get_monkeys(self.boredom)])
+                new_item_level = new_item_level // self.boredom
+            new_item_level = new_item_level % math.prod(other_monkeys_div)
             item_test_result = self.execute_test(new_item_level)
 
             if item_test_result:
@@ -68,67 +66,7 @@ class StupidMonkey:
         return next_items_thrown
 
 
-class Monkey:
-    def __init__(self, monkey_id: int, items: list, operation_str: str, test_str: str, next_throw: tuple,
-                 boredom: int):
-        self.monkey_id = monkey_id
-        self.items = items
-        self.operation_str = operation_str
-        self.operation = self.operation_str.split(" = ")[-1]
-        self.test_str = test_str
-        self.next_throw = next_throw
-        self.boredom = boredom
-        self.inspection_counter = 0
-    
-    def __repr__(self) -> str:
-        return str(self.inspection_counter)
-    
-    def receive_items(self, item_levels: list[int]):
-        self.items.extend(item_levels)
-
-    def get_divisible_by(self):
-        return int(self.test_str.split(" by ")[-1])
-
-    def get_next_throws(self):
-        next_items_thrown = defaultdict(list)
-        for item_level in copy.deepcopy(self.items):
-            _, operator, operand2 = self.operation.split()
-            operand2 = operand2 if operand2.isdigit() else item_level
-            
-            n = self.get_divisible_by()
-            
-            a = item_level
-            _, b = divmod(a, n)  # congruence(a)
-            
-            if operator == "+":
-                # (a + a2) / k ≡ (b + b2) / k (mod n)
-                a2 = int(operand2)
-                _, b2 = divmod(a2, n)
-                
-                congruence_value = (b + b2)
-
-            elif operator == "*":
-                # a.a2 / k ≡ b.b2 / k (mod n)
-                a2 = int(operand2)
-                _, b2 = divmod(a2, n)
-                
-                congruence_value = (b * b2)
-
-            item_test = congruence_value == 0
-            
-            computed_value = n + congruence_value  # todo multiply n
-
-            if item_test:  # divisible
-                next_items_thrown[self.next_throw[0]].append(computed_value)
-            else:
-                next_items_thrown[self.next_throw[1]].append(computed_value)
-
-            self.items.pop(0)
-            self.inspection_counter += 1
-        return next_items_thrown
-
-
-def get_monkeys(boredom_level: int = 3) -> list[Monkey]:
+def get_monkeys(boredom_level: int = 3) -> list[StupidMonkey]:
     monkeys = []
     for line_id, line in enumerate(raw_input):
         if line.startswith("Monkey"):  # init new monkey
@@ -148,12 +86,13 @@ def get_monkeys(boredom_level: int = 3) -> list[Monkey]:
 
 def part1():
     monkeys = get_monkeys(boredom_level=3)
+    monkeys_div = [monkey.get_divisible_by() for monkey in monkeys]
     
     n_rounds = 20
     
     for _ in range(n_rounds):
         for monkey in monkeys:
-            next_items_thrown = monkey.get_next_throws()
+            next_items_thrown = monkey.get_next_throws(other_monkeys_div=monkeys_div)
             for monkey_id, new_items in next_items_thrown.items():
                 monkeys[monkey_id].receive_items(new_items)
 
@@ -165,11 +104,13 @@ def part1():
 def part2():
     monkeys = get_monkeys(boredom_level=1)
     
+    monkeys_div = [monkey.get_divisible_by() for monkey in monkeys]
+    
     n_rounds = 10_000
     
     for round_id in range(n_rounds):
         for monkey in monkeys:
-            next_items_thrown = monkey.get_next_throws()
+            next_items_thrown = monkey.get_next_throws(other_monkeys_div=monkeys_div)
             for monkey_id, new_items in next_items_thrown.items():
                 monkeys[monkey_id].receive_items(new_items)
 
