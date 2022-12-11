@@ -157,8 +157,6 @@ def part1():
             for monkey_id, new_items in next_items_thrown.items():
                 monkeys[monkey_id].receive_items(new_items)
 
-    print([monkey.items for monkey in monkeys])
-
     busy_monkeys = sorted(monkeys, key=lambda monkey: monkey.inspection_counter)[-2:]
 
     return math.prod([monkey.inspection_counter for monkey in busy_monkeys])
