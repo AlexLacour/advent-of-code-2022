@@ -1,5 +1,6 @@
 """Advent Of Code 2022 : Day 13
 """
+import math
 from utils import get_input
 import json
 
@@ -16,23 +17,12 @@ def get_packets_pairs():
 
 
 def compare_values(left_item: list, right_item: list):
-    comparisons = []
-
-    print(left_item, right_item)
-
     for left_item_element, right_item_element in zip(left_item, right_item):
-        print(left_item_element, right_item_element)
         if isinstance(left_item_element, int) and isinstance(right_item_element, int):
             if left_item_element == right_item_element:
                 continue
             else:
-                res = left_item_element < right_item_element
-                comparisons.append(res)
-                if res:
-                    print("We good, right > left")
-                else:
-                    print("We bad, right < left")
-                return res
+                return left_item_element < right_item_element
 
         else:
             if isinstance(left_item_element, int) and isinstance(right_item_element, list):
@@ -40,20 +30,13 @@ def compare_values(left_item: list, right_item: list):
             elif isinstance(left_item_element, list) and isinstance(right_item_element, int):
                 right_item_element = [right_item_element]
 
-            return compare_values(left_item_element, right_item_element)
-
-    if not comparisons:
+            res =  compare_values(left_item_element, right_item_element)
+            if res is not None:
+                return res
+    else:
         if len(left_item) == len(right_item):
-            print("lists are the same length")
             return None
-        res = len(left_item) < len(right_item)
-        if res:
-            print("We good, left ran out first")
-        else:
-            print("We bad, right ran out first")
-        return res
-
-    # return all(value for value in comparisons)
+        return len(left_item) < len(right_item)
 
 
 def part1():
@@ -62,14 +45,32 @@ def part1():
     score = 0
     for pair_id, (left_list, right_list) in enumerate(packets_pairs):
         res = compare_values(left_list, right_list)
-        print()
         if res is not None:
             score += int(res) * (pair_id + 1)
     return score
 
 
+def is_list_sorted(packets_list):
+    return all(compare_values(item, next_item) for item, next_item in zip(packets_list[:-1], packets_list[1:]))
+
+
 def part2():
-    pass
+    packets_pairs = get_packets_pairs()
+    
+    packets = [packet for pair in packets_pairs for packet in pair]
+    
+    divider_packets = [
+        [[2]],
+        [[6]]
+    ]
+    packets.extend(divider_packets)
+    
+    while not is_list_sorted(packets):
+        for item, next_item in zip(packets[:-1], packets[1:]):
+            if not compare_values(item, next_item):
+                item_index, next_item_index = packets.index(item), packets.index(next_item)
+                packets[next_item_index], packets[item_index] = packets[item_index], packets[next_item_index]
+    return math.prod([packets.index(packet) + 1 for packet in divider_packets])
 
 
 if __name__ == "__main__":
